@@ -2,6 +2,7 @@ package ingester
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -95,6 +96,7 @@ func PaystackHandler(w http.ResponseWriter, r *http.Request) {
 // MonoHandler ack webhooks from https://mono.com
 // TODO(subomi): Define handler
 func MonoHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Mono Webhooks Handler")
 }
 
 // STRUCTURES
