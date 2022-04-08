@@ -1,0 +1,27 @@
+name: Deploy Function
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-webhook-endpoint:
+    name: Deploy WebhookEndpoint Function
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - id: "auth"
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: "${{ secrets.gcp_credentials }}"
+
+      - id: "deploy"
+        uses: google-github-actions/deploy-cloud-functions@main
+        with:
+          name: WebhookEndpoint
+          runtime: go116
+          env_vars: ""
+
+      - id: "output"
+        run: 'curl "${{ steps.deploy.outputs.url }}"'
