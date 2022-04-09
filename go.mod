@@ -4,13 +4,13 @@ go 1.18
 
 require (
 	github.com/GoogleCloudPlatform/functions-framework-go v1.5.3
+	github.com/frain-dev/convoy-go v0.2.0
 	github.com/go-chi/chi/v5 v5.0.7
 )
 
 require (
 	cloud.google.com/go/functions v1.0.0 // indirect
 	github.com/cloudevents/sdk-go/v2 v2.6.1 // indirect
-	github.com/frain-dev/convoy-go v0.1.5 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
