@@ -12,12 +12,6 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-var (
-	URL      = os.Getenv("CONVOY_URL")
-	USERNAME = os.Getenv("CONVOY_USERNAME")
-	PASSWORD = os.Getenv("CONVOY_PASSWORD")
-)
-
 func WebhookEndpoint(w http.ResponseWriter, r *http.Request) {
 	// Build Router.
 	router := chi.NewRouter()
@@ -65,9 +59,10 @@ func PaystackHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Server Error: Could not create verifier"))
 	}
 
-	ok, err := verifier.VerifyRequest(r)
+	ok, err := verifier.VerifyRequest(r, payload)
 	if err != nil {
-		w.Write([]byte("Server Error: Failed to verify request"))
+		errMsg := fmt.Sprintf("Bad Request: Could not verify request -  %s", err)
+		w.Write([]byte(errMsg))
 		return
 	}
 
@@ -78,16 +73,18 @@ func PaystackHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Push to Convoy.
 	// TODO(subomi): Build in some form of retries here to ensure reliability.
-	convoyClient := convoy.NewWithCredentials(URL, USERNAME, PASSWORD)
 	appID := os.Getenv("CONVOY_PAYSTACK_APP_ID")
-	_, err = convoyClient.CreateAppEvent(appID, &convoyModels.EventRequest{
+	convoyClient := convoy.New()
+	_, err = convoyClient.CreateAppEvent(&convoyModels.EventRequest{
+		AppID: appID,
 		Event: event.Event,
-		Data:  []byte(`<insert-real-data>`),
+		Data:  payload,
 	})
 
 	// TODO(subomi): This is critical. Add logs here.
 	if err != nil {
-		w.Write([]byte("Server Error: Failed to send event to Convoy"))
+		errMsg := fmt.Sprintf("Server Error: Failed to send event to Convoy - %s", err)
+		w.Write([]byte(errMsg))
 		return
 	}
 
