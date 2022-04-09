@@ -29,5 +29,5 @@ curl --request POST \
 --header "X-Forwarded-For: <insert-ip-address> \
 --data '{"event": "charge.created"}'
 ```
-You can generate dummy hash (here)[https://go.dev/play/p/NfFgzhtj-N]
+You can generate dummy hash [here](https://go.dev/play/p/NfFgzhtj-N)
 
