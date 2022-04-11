@@ -111,9 +111,10 @@ func PaystackHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Server Error: Could not create verifier"))
 	}
 
-	ok, err := verifier.VerifyRequest(r)
+	ok, err := verifier.VerifyRequest(r, payload)
 	if err != nil {
-		w.Write([]byte("Server Error: Failed to verify request"))
+		errMsg := fmt.Sprintf("Bad Request: Could not verify request -  %s", err)
+		w.Write([]byte(errMsg))
 		return
 	}
 
