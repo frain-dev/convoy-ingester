@@ -20,8 +20,7 @@ type pubSubMessage struct {
 }
 
 type convoyRequest struct {
-	AppID string                    `json:"app_id"`
-	Data  convoyModels.EventRequest `json:"event_request"`
+	Data convoyModels.EventRequest `json:"data"`
 }
 
 func (c *convoyRequest) ToBytes() ([]byte, error) {
@@ -30,7 +29,7 @@ func (c *convoyRequest) ToBytes() ([]byte, error) {
 	encoder := json.NewEncoder(buf)
 	encoder.SetEscapeHTML(false)
 
-	if err := encoder.Encode(c); err != nil {
+	if err := encoder.Encode(c.Data); err != nil {
 		return nil, err
 	}
 
@@ -41,7 +40,7 @@ func (c *convoyRequest) FromBytes(b []byte) error {
 	source := bytes.NewReader(b)
 	decoder := json.NewDecoder(source)
 
-	if err := decoder.Decode(c); err != nil {
+	if err := decoder.Decode(c.Data); err != nil {
 		return err
 	}
 

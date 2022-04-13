@@ -75,6 +75,7 @@ func PushToConvoy(ctx context.Context, m pubSubMessage) error {
 		return errors.New(fmt.Sprintf("Server Error: Failed to send event to Convoy - %+v", err))
 	}
 
+	return nil
 }
 
 // HTTP Handlers
@@ -126,8 +127,8 @@ func PaystackHandler(w http.ResponseWriter, r *http.Request) {
 	// Push to Convoy.
 	appID := os.Getenv("CONVOY_PAYSTACK_APP_ID")
 	req := &convoyRequest{
-		AppID: appID,
 		Data: convoyModels.EventRequest{
+			AppID: appID,
 			Event: event.Event,
 			Data:  payload,
 		},
