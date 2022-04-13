@@ -41,6 +41,8 @@ jobs:
         uses: google-github-actions/deploy-cloud-functions@main
         with:
           name: PushToConvoy
+          event_trigger_type: "google.pubsub.topic.publish"
+          event_trigger_resource: "${{ secrets.trigger_resource }}"
           runtime: go116
           env_vars: ""
 
