@@ -45,6 +45,3 @@ jobs:
           event_trigger_resource: "${{ secrets.trigger_resource }}"
           runtime: go116
           env_vars: ""
-
-      - id: "output"
-        run: 'curl "${{ steps.deploy.outputs.url }}"'
