@@ -1,4 +1,4 @@
-package ingester
+package verifier
 
 import (
 	"bytes"
@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"hash"
+	"log"
 	"net"
 	"net/http"
 	"strings"
@@ -18,6 +19,7 @@ var ErrInvalidIP = errors.New("Source IP not supported")
 var ErrCannotReadRequestBody = errors.New("Failed to read request body")
 var ErrHashDoesNotMatch = errors.New("Invalid Signature - Hash does not match")
 var ErrCannotDecodeMACHeader = errors.New("Cannot decode MAC header")
+var ErrSignatureCannotBeEmpty = errors.New("Signature cannot be empty")
 
 // VerifierOptions
 type VerifierOptions struct {
@@ -39,18 +41,21 @@ func NewVerifier(opts *VerifierOptions) *Verifier {
 
 func (v *Verifier) VerifyRequest(r *http.Request, payload []byte) (bool, error) {
 	// Check IP Address.
-	validIP := false
-	ipAddr := getIPAddress(r)
+	// Empty IPWhitelist means allow all.
+	if len(v.opts.IPWhitelist) != 0 {
+		validIP := false
+		ipAddr := getIPAddress(r)
 
-	for _, v := range v.opts.IPWhitelist {
-		if ipAddr == v {
-			validIP = true
-			break
+		for _, v := range v.opts.IPWhitelist {
+			if ipAddr == v {
+				validIP = true
+				break
+			}
 		}
-	}
 
-	if !validIP {
-		//return false, ErrInvalidIP
+		if !validIP {
+			return false, ErrInvalidIP
+		}
 	}
 
 	// Check Signature.
@@ -59,11 +64,18 @@ func (v *Verifier) VerifyRequest(r *http.Request, payload []byte) (bool, error) 
 		return false, err
 	}
 
+	rHeader := r.Header.Get(v.opts.Header)
+
+	if len(strings.TrimSpace(rHeader)) == 0 {
+		return false, ErrSignatureCannotBeEmpty
+	}
+
 	mac := hmac.New(hash, []byte(v.opts.Secret))
 	mac.Write(payload)
 	expectedMAC := mac.Sum(nil)
-	sentMAC, err := hex.DecodeString(r.Header.Get(v.opts.Header))
+	sentMAC, err := hex.DecodeString(rHeader)
 	if err != nil {
+		log.Println(err)
 		return false, ErrCannotDecodeMACHeader
 	}
 

@@ -13,13 +13,12 @@ import (
 	"cloud.google.com/go/pubsub"
 	convoy "github.com/frain-dev/convoy-go"
 	convoyModels "github.com/frain-dev/convoy-go/models"
+	"github.com/frain-dev/convoy-ingester/pkg/verifier"
 	"github.com/go-chi/chi/v5"
 )
 
 var (
-	URL      = os.Getenv("CONVOY_URL")
-	USERNAME = os.Getenv("CONVOY_USERNAME")
-	PASSWORD = os.Getenv("CONVOY_PASSWORD")
+	URL = os.Getenv("CONVOY_URL")
 
 	// GOOGLE_CLOUD_PROJECT is a user-set environment variable.
 	projectID = os.Getenv("GOOGLE_CLOUD_PROJECT")
@@ -100,14 +99,14 @@ func PaystackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Verify Payload.
-	verifierOpts := &VerifierOptions{
+	verifierOpts := &verifier.VerifierOptions{
 		Header:      "X-Paystack-Signature",
 		Hash:        "SHA512",
 		Secret:      os.Getenv("PAYSTACK_SECRET"),
 		IPWhitelist: []string{"52.31.139.75", "52.49.173.169", "52.214.14.220"},
 	}
 
-	verifier := NewVerifier(verifierOpts)
+	verifier := verifier.NewVerifier(verifierOpts)
 	if err != nil {
 		w.Write([]byte("Server Error: Could not create verifier"))
 	}
