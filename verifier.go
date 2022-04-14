@@ -50,7 +50,7 @@ func (v *Verifier) VerifyRequest(r *http.Request, payload []byte) (bool, error) 
 	}
 
 	if !validIP {
-		return false, ErrInvalidIP
+		//return false, ErrInvalidIP
 	}
 
 	// Check Signature.
