@@ -3,14 +3,13 @@
 # Run Ingester
 # This script assumes you're in the examples directory.
 
-export CONVOY_URL=https://cloud.getconvoy.io/api/v1
-export CONVOY_GROUP_ID=$1
-export CONVOY_API_KEY=$2
-export PAYSTACK_SECRET=$3
-export CONVOY_PAYSTACK_APP_ID=$4
+export GOOGLE_APPLICATION_CREDENTIALS=$1
+export WEBHOOK_TOPIC=$2
+export GOOGLE_CLOUD_PROJECT=$3
+export PAYSTACK_SECRET=$4
 
 # Build Ingester
-go build -o convoy-ingester ../cmd/main.go
+go build -o convoy-ingester ../cmd/ingester/main.go
 
 # Run Ingester
 ./convoy-ingester
