@@ -21,7 +21,7 @@ jobs:
         with:
           name: WebhookEndpoint
           runtime: go116
-          env_vars: ""
+          env_vars: "${{ secrets.webhook_endpoint_env_vars }}"
 
       - id: "output"
         run: 'curl "${{ steps.deploy.outputs.url }}"'
@@ -44,4 +44,4 @@ jobs:
           event_trigger_type: "google.pubsub.topic.publish"
           event_trigger_resource: "${{ secrets.trigger_resource }}"
           runtime: go116
-          env_vars: ""
+          env_vars: "${{ secrets.push_to_convoy_env_vars }}"
