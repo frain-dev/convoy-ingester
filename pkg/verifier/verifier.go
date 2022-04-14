@@ -8,7 +8,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"hash"
-	"log"
 	"net"
 	"net/http"
 	"strings"
@@ -75,7 +74,6 @@ func (v *Verifier) VerifyRequest(r *http.Request, payload []byte) (bool, error) 
 	expectedMAC := mac.Sum(nil)
 	sentMAC, err := hex.DecodeString(rHeader)
 	if err != nil {
-		log.Println(err)
 		return false, ErrCannotDecodeMACHeader
 	}
 

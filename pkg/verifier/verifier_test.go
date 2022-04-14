@@ -44,7 +44,26 @@ func Test_VerifyRequest(t *testing.T) {
 			expected:      false,
 			expectedError: ErrHashDoesNotMatch,
 		},
-		//"invalid_hex": { },
+		"invalid_hex": {
+			opts: &VerifierOptions{
+				Header:      "X-Convoy-Signature",
+				Hash:        "SHA512",
+				Secret:      "Convoy",
+				IPWhitelist: []string{},
+			},
+			payload: []byte(`Test Payload Body`),
+			requestFn: func(t *testing.T) *http.Request {
+				req, err := http.NewRequest("POST", "URL", strings.NewReader(``))
+				require.NoError(t, err)
+
+				hash := "Hash with characters outside hex"
+
+				req.Header.Add("X-Convoy-Signature", hash)
+				return req
+			},
+			expected:      false,
+			expectedError: ErrCannotDecodeMACHeader,
+		},
 		"empty_signature": {
 			opts: &VerifierOptions{
 				Header:      "X-Convoy-Signature",
