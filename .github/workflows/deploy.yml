@@ -22,6 +22,7 @@ jobs:
           name: WebhookEndpoint
           runtime: go116
           env_vars: "${{ secrets.webhook_endpoint_env_vars }}"
+          secret_environment_variables: "API_KEY=Subomi,API_TOKEN=Oluwalana"
 
       - id: "output"
         run: 'curl "${{ steps.deploy.outputs.url }}"'
