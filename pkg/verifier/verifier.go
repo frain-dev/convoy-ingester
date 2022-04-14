@@ -38,7 +38,7 @@ func NewVerifier(opts *VerifierOptions) *Verifier {
 	}
 }
 
-func (v *Verifier) VerifyRequest(r *http.Request, payload []byte) (bool, error) {
+func (v *Verifier) VerifyRequest(r *http.Request, payload []byte) error {
 	// Check IP Address.
 	// Empty IPWhitelist means allow all.
 	if len(v.opts.IPWhitelist) != 0 {
@@ -53,20 +53,20 @@ func (v *Verifier) VerifyRequest(r *http.Request, payload []byte) (bool, error) 
 		}
 
 		if !validIP {
-			return false, ErrInvalidIP
+			return ErrInvalidIP
 		}
 	}
 
 	// Check Signature.
 	hash, err := v.getHashFunction(v.opts.Hash)
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	rHeader := r.Header.Get(v.opts.Header)
 
 	if len(strings.TrimSpace(rHeader)) == 0 {
-		return false, ErrSignatureCannotBeEmpty
+		return ErrSignatureCannotBeEmpty
 	}
 
 	mac := hmac.New(hash, []byte(v.opts.Secret))
@@ -74,16 +74,16 @@ func (v *Verifier) VerifyRequest(r *http.Request, payload []byte) (bool, error) 
 	expectedMAC := mac.Sum(nil)
 	sentMAC, err := hex.DecodeString(rHeader)
 	if err != nil {
-		return false, ErrCannotDecodeMACHeader
+		return ErrCannotDecodeMACHeader
 	}
 
 	validMAC := hmac.Equal(sentMAC, expectedMAC)
 
 	if !validMAC {
-		return false, ErrHashDoesNotMatch
+		return ErrHashDoesNotMatch
 	}
 
-	return true, nil
+	return nil
 }
 
 func (v *Verifier) getHashFunction(algorithm string) (func() hash.Hash, error) {

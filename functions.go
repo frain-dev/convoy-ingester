@@ -87,14 +87,16 @@ func PushToConvoy(ctx context.Context, m pubSubMessage) error {
 func PaystackHandler(w http.ResponseWriter, r *http.Request) {
 	payload, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		w.Write([]byte("Could not read payload"))
+		w.Write([]byte("Bad Request: Could not read payload"))
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	var event PaystackEvent
 	err = json.Unmarshal(payload, &event)
 	if err != nil {
-		w.Write([]byte("Server Error: could not unmarshal payload"))
+		w.Write([]byte("Bad Request: Could not unmarshal payload"))
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -107,19 +109,11 @@ func PaystackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	verifier := verifier.NewVerifier(verifierOpts)
-	if err != nil {
-		w.Write([]byte("Server Error: Could not create verifier"))
-	}
-
-	ok, err := verifier.VerifyRequest(r, payload)
+	err = verifier.VerifyRequest(r, payload)
 	if err != nil {
 		errMsg := fmt.Sprintf("Bad Request: Could not verify request -  %s", err)
 		w.Write([]byte(errMsg))
-		return
-	}
-
-	if !ok {
-		w.Write([]byte("Bad Request: Could not verify request"))
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -135,8 +129,8 @@ func PaystackHandler(w http.ResponseWriter, r *http.Request) {
 
 	data, err := req.ToBytes()
 	if err != nil {
-		log.Printf("Failed to transform to bytes")
-		w.Write([]byte(`Failed to transform bytes`))
+		w.Write([]byte("Bad Request: Failed to transform bytes"))
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -145,13 +139,15 @@ func PaystackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	id, err := client.Topic(topic).Publish(r.Context(), m).Get(r.Context())
 	if err != nil {
-		log.Printf("topic(%s).Publish.Get: %v", topic, err)
-		w.Write([]byte("Error publishing event"))
+		w.Write([]byte("Bad Request: Error publishing event"))
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	fmt.Fprintf(w, "Message published: %v", id)
+
+	fmt.Fprintf(w, "Message published: %v\n", id)
 
 	w.Write([]byte("Event sent"))
+	w.WriteHeader(http.StatusOK)
 }
 
 // MonoHandler ack webhooks from https://mono.com

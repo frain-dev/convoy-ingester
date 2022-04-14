@@ -21,7 +21,6 @@ func Test_VerifyRequest(t *testing.T) {
 		opts          *VerifierOptions
 		payload       []byte
 		requestFn     func(t *testing.T) *http.Request
-		expected      bool
 		expectedError error
 	}{
 		"invalid_signature": {
@@ -41,7 +40,6 @@ func Test_VerifyRequest(t *testing.T) {
 				req.Header.Add("X-Convoy-Signature", hash)
 				return req
 			},
-			expected:      false,
 			expectedError: ErrHashDoesNotMatch,
 		},
 		"invalid_hex": {
@@ -61,7 +59,6 @@ func Test_VerifyRequest(t *testing.T) {
 				req.Header.Add("X-Convoy-Signature", hash)
 				return req
 			},
-			expected:      false,
 			expectedError: ErrCannotDecodeMACHeader,
 		},
 		"empty_signature": {
@@ -79,7 +76,6 @@ func Test_VerifyRequest(t *testing.T) {
 				req.Header.Add("X-Convoy-Signature", "")
 				return req
 			},
-			expected:      false,
 			expectedError: ErrSignatureCannotBeEmpty,
 		},
 		"invalid_ip": {
@@ -96,7 +92,6 @@ func Test_VerifyRequest(t *testing.T) {
 				req.Header.Add("X-Forwarded-For", "50.50.50.50")
 				return req
 			},
-			expected:      false,
 			expectedError: ErrInvalidIP,
 		},
 		"valid_request": {
@@ -118,7 +113,6 @@ func Test_VerifyRequest(t *testing.T) {
 				req.Header.Add("X-Forwarded-For", "52.52.52.52")
 				return req
 			},
-			expected:      true,
 			expectedError: nil,
 		},
 	}
@@ -130,11 +124,10 @@ func Test_VerifyRequest(t *testing.T) {
 			req := tc.requestFn(t)
 
 			// Assert.
-			ok, err := v.VerifyRequest(req, tc.payload)
+			err := v.VerifyRequest(req, tc.payload)
 
 			// Act.
 			require.ErrorIs(t, err, tc.expectedError)
-			require.Equal(t, ok, tc.expected)
 		})
 	}
 }
