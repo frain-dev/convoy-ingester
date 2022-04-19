@@ -9,14 +9,14 @@ The plan is to make this first class support in Convoy, this repo is a prototype
 
 #### WebhookEndpoint
 This function receives webhook events from the provider E.g. Paystack. acks the event and publishes the event to a pub/sub topic. To configure this function 
-set the environment variable - `WEBHOOK_ENDPOINT_ENV_VARS` with:
+set the environment variable - `WEBHOOK_ENDPOINT_ENV_VARS` in GitHub actions with:
 
 ```bash
 WEBHOOK_TOPIC=<insert-topic>,GOOGLE_CLOUD_PROJECT=<insert-project-id>,PAYSTACK_SECRET=<insert-paystack-secret>
 ```
 
 #### PushToConvoy
-This function is triggered from the pub/sub topic earlier and pushes to Convoy. To configure this function set environment variable - `PUSH_TO_CONVOY_ENV_VARS` with:
+This function is triggered from the pub/sub topic earlier and pushes to Convoy. To configure this function set environment variable - `PUSH_TO_CONVOY_ENV_VARS` in GitHub actions with:
 
 ```bash
 WEBHOOK_TOPIC=<insert-topic>,GOOGLE_CLOUD_PROJECT=<insert-project-id>,CONVOY_GROUP_ID=<insert-group-id>,CONVOY_API_KEY=<insert-api-key>,CONVOY_PAYSTACK_APP_ID=<insert-app-id>
