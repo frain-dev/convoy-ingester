@@ -50,5 +50,6 @@ jobs:
           name: PushToConvoy
           event_trigger_type: "google.pubsub.topic.publish"
           event_trigger_resource: "${{ secrets.trigger_resource }}"
+          event_trigger_retry: true
           runtime: go116
           env_vars: "${{ secrets.push_to_convoy_env_vars }}"

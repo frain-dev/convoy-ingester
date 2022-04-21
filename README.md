@@ -25,6 +25,10 @@ WEBHOOK_TOPIC=<insert-topic>,GOOGLE_CLOUD_PROJECT=<insert-project-id>,CONVOY_GRO
 ### How To
 To run this function, you need to fork the repository. Follow this [article](https://www.honeybadger.io/blog/building-testing-and-deploying-google-cloud-functions-with-ruby/) to deploy these functions to Google Cloud Functions
 
+### Topic Configuration
+- Create a topic on the GCP console. Retrieve the topic's full name. E.g. `projects/{project-name}/topics/{topic-name}`
+- Add the topic to the Github actions secret with key - `TRIGGER_RESOURCE`
+
 ### Push Request
 ```bash
 curl --request POST \
