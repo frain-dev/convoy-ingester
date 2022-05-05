@@ -16,7 +16,7 @@ func (p *Provider) VerifyRequest(r *http.Request, payload []byte) error {
 }
 
 func LoadProviderStore() error {
-	var pStore ProviderStore
+	pStore := make(ProviderStore)
 
 	// Create registry from configuration
 	for _, c := range *configStore {
