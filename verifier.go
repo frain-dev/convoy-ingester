@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"crypto/sha512"
+	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"hash"
@@ -21,6 +22,8 @@ var ErrCannotDecodeMACHeader = errors.New("Cannot decode MAC header")
 var ErrSignatureCannotBeEmpty = errors.New("Signature cannot be empty")
 var ErrAuthHeader = errors.New("Invalid Authorization header")
 var ErrAuthHeaderCannotBeEmpty = errors.New("Auth header cannot be empty")
+var ErrInvalidHeaderStructure = errors.New("Invalid header structure")
+var ErrInvalidAuthLength = errors.New("Invalid Basic Auth Length")
 
 type Verifier interface {
 	VerifyRequest(r *http.Request, payload []byte) error
@@ -79,6 +82,28 @@ type BasicAuthVerifier struct {
 }
 
 func (baV *BasicAuthVerifier) VerifyRequest(r *http.Request, payload []byte) error {
+	val := r.Header.Get("Authorization")
+	authInfo := strings.Split(val, " ")
+
+	if len(authInfo) != 2 {
+		return ErrInvalidHeaderStructure
+	}
+
+	credentials, err := base64.StdEncoding.DecodeString(authInfo[1])
+	if err != nil {
+		return ErrInvalidHeaderStructure
+	}
+
+	creds := strings.Split(string(credentials), ":")
+
+	if len(creds) != 2 {
+		return ErrInvalidAuthLength
+	}
+
+	if creds[0] != baV.config.Username && creds[1] != baV.config.Password {
+		return ErrAuthHeader
+	}
+
 	return nil
 }
 
@@ -87,6 +112,17 @@ type APIKeyVerifier struct {
 }
 
 func (aV *APIKeyVerifier) VerifyRequest(r *http.Request, payload []byte) error {
+	val := r.Header.Get("Authorization")
+	authInfo := strings.Split(val, " ")
+
+	if len(authInfo) != 2 {
+		return ErrInvalidHeaderStructure
+	}
+
+	if authInfo[1] != aV.config.APIKey {
+		return ErrAuthHeader
+	}
+
 	return nil
 }
 

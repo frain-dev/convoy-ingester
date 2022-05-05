@@ -41,21 +41,25 @@ func init() {
 	// err is pre-declared to avoid shadowing client.
 	var err error
 
+	env := os.Getenv("ENV")
+
 	// client is initialized with context.Background() because it should
 	// persist between function invocations.
-	client, err = pubsub.NewClient(context.Background(), projectID)
-	if err != nil {
-		log.Fatalf("pubsub.NewClient: %v", err)
-	}
+	if env == "prod" {
+		client, err = pubsub.NewClient(context.Background(), projectID)
+		if err != nil {
+			log.Fatalf("pubsub.NewClient: %v", err)
+		}
 
-	// Setup configStore
-	if err = LoadConfig(CONFIG_ENV); err != nil {
-		log.Fatalf("Failed to load config: %v", err)
-	}
+		// Setup configStore
+		if err = LoadConfig(CONFIG_ENV); err != nil {
+			log.Fatalf("Failed to load config: %v", err)
+		}
 
-	// TODO(subomi): Initialize providers registry once per instance.
-	if err = LoadProviderStore(); err != nil {
-		log.Fatalf("Failed to setup provider store: %v", err)
+		// TODO(subomi): Initialize providers registry once per instance.
+		if err = LoadProviderStore(); err != nil {
+			log.Fatalf("Failed to setup provider store: %v", err)
+		}
 	}
 }
 

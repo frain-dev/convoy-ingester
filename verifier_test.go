@@ -135,7 +135,7 @@ func Test_BasicAuthVerifier_VerifyRequest(t *testing.T) {
 			},
 			expectedError: nil,
 		},
-		"invalid_credentials": {
+		"wrong_credentials": {
 			opts: &BasicAuthConfig{
 				Username: "convoy-ingester",
 				Password: "convoy-ingester",
@@ -151,6 +151,38 @@ func Test_BasicAuthVerifier_VerifyRequest(t *testing.T) {
 			},
 			expectedError: ErrAuthHeader,
 		},
+		"invalid_credentials": {
+			opts: &BasicAuthConfig{
+				Username: "convoy-ingester",
+				Password: "convoy-ingester",
+			},
+			payload: []byte(`Test Payload Body`),
+			requestFn: func(t *testing.T, c *BasicAuthConfig) *http.Request {
+				req, err := http.NewRequest("POST", "URL", strings.NewReader(``))
+				require.NoError(t, err)
+
+				req.Header.Add("Authorization", "Basic wrongbase64str")
+
+				return req
+			},
+			expectedError: ErrInvalidHeaderStructure,
+		},
+		"invalid_header_format": {
+			opts: &BasicAuthConfig{
+				Username: "convoy-ingester",
+				Password: "convoy-password",
+			},
+			payload: []byte(`Test Payload Body`),
+			requestFn: func(t *testing.T, c *BasicAuthConfig) *http.Request {
+				req, err := http.NewRequest("POST", "URL", strings.NewReader(``))
+				require.NoError(t, err)
+
+				req.Header.Add("Authorization", "Basic")
+
+				return req
+			},
+			expectedError: ErrInvalidHeaderStructure,
+		},
 		"empty_auth_header": {
 			opts: &BasicAuthConfig{
 				Username: "convoy-ingester",
@@ -163,7 +195,7 @@ func Test_BasicAuthVerifier_VerifyRequest(t *testing.T) {
 
 				return req
 			},
-			expectedError: ErrAuthHeaderCannotBeEmpty,
+			expectedError: ErrInvalidHeaderStructure,
 		},
 	}
 
@@ -198,7 +230,7 @@ func Test_APIKeyVerifier_VerifyRequest(t *testing.T) {
 				req, err := http.NewRequest("POST", "URL", strings.NewReader(``))
 				require.NoError(t, err)
 
-				req.Header.Add("Authorization", "sec_invalidkey")
+				req.Header.Add("Authorization", "Bearer sec_invalidkey")
 				return req
 			},
 			expectedError: ErrAuthHeader,
@@ -212,7 +244,7 @@ func Test_APIKeyVerifier_VerifyRequest(t *testing.T) {
 				req, err := http.NewRequest("POST", "URL", strings.NewReader(``))
 				require.NoError(t, err)
 
-				req.Header.Add("Authorization", "sec_apikeysecret")
+				req.Header.Add("Authorization", "Bearer sec_apikeysecret")
 				return req
 			},
 			expectedError: nil,
