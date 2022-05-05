@@ -1,10 +1,11 @@
-package verifier
+package ingester
 
 import (
 	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
 	"crypto/sha512"
+	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"hash"
@@ -19,66 +20,45 @@ var ErrCannotReadRequestBody = errors.New("Failed to read request body")
 var ErrHashDoesNotMatch = errors.New("Invalid Signature - Hash does not match")
 var ErrCannotDecodeMACHeader = errors.New("Cannot decode MAC header")
 var ErrSignatureCannotBeEmpty = errors.New("Signature cannot be empty")
+var ErrAuthHeader = errors.New("Invalid Authorization header")
+var ErrAuthHeaderCannotBeEmpty = errors.New("Auth header cannot be empty")
+var ErrInvalidHeaderStructure = errors.New("Invalid header structure")
+var ErrInvalidAuthLength = errors.New("Invalid Basic Auth Length")
 
-// VerifierOptions
-type VerifierOptions struct {
-	Header      string
-	Hash        string
-	Secret      string
-	IPWhitelist []string
+type Verifier interface {
+	VerifyRequest(r *http.Request, payload []byte) error
 }
 
-type Verifier struct {
-	opts *VerifierOptions
+type HmacVerifier struct {
+	config *HmacConfig
 }
 
-func NewVerifier(opts *VerifierOptions) *Verifier {
-	return &Verifier{
-		opts: opts,
-	}
-}
-
-func (v *Verifier) VerifyRequest(r *http.Request, payload []byte) error {
-	// Check IP Address.
-	// Empty IPWhitelist means allow all.
-	if len(v.opts.IPWhitelist) != 0 {
-		validIP := false
-		ipAddr := getIPAddress(r)
-
-		for _, v := range v.opts.IPWhitelist {
-			if ipAddr == v {
-				validIP = true
-				break
-			}
-		}
-
-		if !validIP {
-			return ErrInvalidIP
-		}
+func (hV *HmacVerifier) VerifyRequest(r *http.Request, payload []byte) error {
+	if hV.config == nil {
+		return errors.New("Verifier Config Error")
 	}
 
 	// Check Signature.
-	hash, err := v.getHashFunction(v.opts.Hash)
+	hash, err := hV.getHashFunction(hV.config.Hash)
 	if err != nil {
 		return err
 	}
 
-	rHeader := r.Header.Get(v.opts.Header)
+	rHeader := r.Header.Get(hV.config.Header)
 
 	if len(strings.TrimSpace(rHeader)) == 0 {
 		return ErrSignatureCannotBeEmpty
 	}
 
-	mac := hmac.New(hash, []byte(v.opts.Secret))
+	mac := hmac.New(hash, []byte(hV.config.Secret))
 	mac.Write(payload)
-	expectedMAC := mac.Sum(nil)
-	sentMAC, err := hex.DecodeString(rHeader)
+	eMAC := mac.Sum(nil)
+	sMAC, err := hex.DecodeString(rHeader)
 	if err != nil {
 		return ErrCannotDecodeMACHeader
 	}
 
-	validMAC := hmac.Equal(sentMAC, expectedMAC)
-
+	validMAC := hmac.Equal(sMAC, eMAC)
 	if !validMAC {
 		return ErrHashDoesNotMatch
 	}
@@ -86,8 +66,8 @@ func (v *Verifier) VerifyRequest(r *http.Request, payload []byte) error {
 	return nil
 }
 
-func (v *Verifier) getHashFunction(algorithm string) (func() hash.Hash, error) {
-	switch algorithm {
+func (hV *HmacVerifier) getHashFunction(algo string) (func() hash.Hash, error) {
+	switch algo {
 	case "SHA256":
 		return sha256.New, nil
 	case "SHA512":
@@ -95,6 +75,63 @@ func (v *Verifier) getHashFunction(algorithm string) (func() hash.Hash, error) {
 	default:
 		return nil, ErrAlgoNotFound
 	}
+}
+
+type BasicAuthVerifier struct {
+	config *BasicAuthConfig
+}
+
+func (baV *BasicAuthVerifier) VerifyRequest(r *http.Request, payload []byte) error {
+	val := r.Header.Get("Authorization")
+	authInfo := strings.Split(val, " ")
+
+	if len(authInfo) != 2 {
+		return ErrInvalidHeaderStructure
+	}
+
+	credentials, err := base64.StdEncoding.DecodeString(authInfo[1])
+	if err != nil {
+		return ErrInvalidHeaderStructure
+	}
+
+	creds := strings.Split(string(credentials), ":")
+
+	if len(creds) != 2 {
+		return ErrInvalidAuthLength
+	}
+
+	if creds[0] != baV.config.Username && creds[1] != baV.config.Password {
+		return ErrAuthHeader
+	}
+
+	return nil
+}
+
+type APIKeyVerifier struct {
+	config *APIKeyConfig
+}
+
+func (aV *APIKeyVerifier) VerifyRequest(r *http.Request, payload []byte) error {
+	val := r.Header.Get("Authorization")
+	authInfo := strings.Split(val, " ")
+
+	if len(authInfo) != 2 {
+		return ErrInvalidHeaderStructure
+	}
+
+	if authInfo[1] != aV.config.APIKey {
+		return ErrAuthHeader
+	}
+
+	return nil
+}
+
+type IPAddressVerifier struct {
+	config *IPAddressConfig
+}
+
+func (ipV *IPAddressVerifier) VerifyRequest(r *http.Request, payload []byte) error {
+	return nil
 }
 
 // Verify IP Address.

@@ -1,0 +1,59 @@
+[
+  {
+    "name": "paystack",
+    "verifier_config": {
+      "type": "hmac",
+      "header": "X-Paystack-Signature",
+      "hash": "SHA512",
+      "secret": "Paystack Secret"
+    }
+  },
+  {
+    "name": "flutterwave",
+    "verifier_configs": {
+      "type": "hmac",
+      "header": "X-Flutterwave-Signature",
+      "hash": "SHA512",
+      "secret": "PAYSTACK_SECRET"
+    }
+  },
+  {
+    "name": "monnify",
+    "verifier_configs": [
+      {
+        "type": "hmac",
+        "header": "monnify-signature",
+        "hash": "SHA512",
+        "secret": "MONNIFY_SECRET"
+      }
+    ]
+  },
+  {
+    "name": "mono",
+    "verifier_configs": [
+      {
+        "type": "api_key",
+        "api_key": "sec_secretphrase"
+      }
+    ]
+  },
+  {
+    "name": "pagerduty",
+    "verifier_configs": [
+      {
+        "type": "hmac",
+        "header": "X-PagerDuty-Signature",
+        "hash": "SHA512",
+        "secret": "PagerDuty Secret"
+      },
+      {
+        "type": "ip_address",
+        "ip_addresses": ["52.31.139.75", "52.49.173.169"]
+      },
+      {
+        "type": "mutual_tls",
+        "certificate": "x509 certificate"
+      }
+    ]
+  }
+]
