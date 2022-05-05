@@ -41,6 +41,7 @@ func init() {
 	// err is pre-declared to avoid shadowing client.
 	var err error
 
+	// Set environment to prevent the init function from running in our tests.
 	env := os.Getenv("ENV")
 
 	// client is initialized with context.Background() because it should
