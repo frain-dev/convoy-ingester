@@ -34,6 +34,7 @@ type BasicAuthConfig struct {
 }
 
 type APIKeyConfig struct {
+	Header string `json:"header"`
 	APIKey string `json:"api_key"`
 }
 

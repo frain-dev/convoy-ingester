@@ -16,8 +16,6 @@ import (
 )
 
 var (
-	URL = os.Getenv("CONVOY_URL")
-
 	// GOOGLE_CLOUD_PROJECT is a user-set environment variable.
 	projectID = os.Getenv("GOOGLE_CLOUD_PROJECT")
 
@@ -34,7 +32,7 @@ var (
 	CONFIG_ENV = "CONVOY_INGESTER_CONFIG"
 
 	// Providers Store
-	providerStore *ProviderStore
+	providerStore ProviderStore
 )
 
 func init() {
@@ -102,7 +100,7 @@ func PushToConvoy(ctx context.Context, m pubSubMessage) error {
 // HTTP Handlers
 func WebhooksHandler(w http.ResponseWriter, r *http.Request) {
 	providerName := chi.URLParam(r, "provider")
-	provider := (*providerStore)[providerName]
+	provider := providerStore[providerName]
 
 	payload, err := ioutil.ReadAll(r.Body)
 	if err != nil {

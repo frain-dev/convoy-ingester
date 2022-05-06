@@ -16,7 +16,6 @@ func (p *Provider) VerifyRequest(r *http.Request, payload []byte) error {
 }
 
 func LoadProviderStore() error {
-	pStore := make(ProviderStore)
 
 	// Create registry from configuration
 	for _, c := range *configStore {
@@ -33,7 +32,7 @@ func LoadProviderStore() error {
 			p.verifier = &APIKeyVerifier{c.VerifierConfig.APIKeyConfig}
 		}
 
-		pStore[c.Name] = p
+		providerStore[c.Name] = p
 	}
 
 	return nil

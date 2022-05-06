@@ -112,7 +112,13 @@ type APIKeyVerifier struct {
 }
 
 func (aV *APIKeyVerifier) VerifyRequest(r *http.Request, payload []byte) error {
-	val := r.Header.Get("Authorization")
+	authHeader := "Authorization"
+
+	if len(strings.TrimSpace(aV.config.Header)) != 0 {
+		authHeader = aV.config.Header
+	}
+
+	val := r.Header.Get(authHeader)
 	authInfo := strings.Split(val, " ")
 
 	if len(authInfo) != 2 {
