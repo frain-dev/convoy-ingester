@@ -125,6 +125,8 @@ func (aV *APIKeyVerifier) VerifyRequest(r *http.Request, payload []byte) error {
 		if val != aV.config.APIKey {
 			return ErrAuthHeader
 		}
+
+		return nil
 	}
 
 	val := r.Header.Get(authHeader)
