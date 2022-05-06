@@ -1,6 +1,8 @@
 package ingester
 
-import "net/http"
+import (
+	"net/http"
+)
 
 // Store
 type ProviderStore map[string]*Provider

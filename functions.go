@@ -32,7 +32,7 @@ var (
 	CONFIG_ENV = "CONVOY_INGESTER_CONFIG"
 
 	// Providers Store
-	providerStore ProviderStore
+	providerStore = make(ProviderStore)
 )
 
 func init() {

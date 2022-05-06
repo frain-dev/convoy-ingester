@@ -50,6 +50,12 @@ func (vC *VerifierConfig) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
+	// Invalidate all others so it won't affect.
+	vC.HmacConfig = nil
+	vC.APIKeyConfig = nil
+	vC.BasicAuthConfig = nil
+	vC.IPAddressConfig = nil
+
 	switch temp.Type {
 	case "hmac":
 		var c HmacConfig
@@ -57,7 +63,6 @@ func (vC *VerifierConfig) UnmarshalJSON(data []byte) error {
 			return err
 		}
 
-		// TODO(subomi): Invalidate all other verifiers.
 		vC.HmacConfig = &c
 		return nil
 	case "api_key":
