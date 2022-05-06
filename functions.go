@@ -104,16 +104,16 @@ func WebhooksHandler(w http.ResponseWriter, r *http.Request) {
 
 	payload, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		w.Write([]byte("Bad Request: Could not read payload"))
 		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Bad Request: Could not read payload"))
 		return
 	}
 
 	err = provider.VerifyRequest(r, payload)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		errMsg := fmt.Sprintf("Bad Request: Could not verify request -  %s", err)
 		w.Write([]byte(errMsg))
-		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -129,8 +129,8 @@ func WebhooksHandler(w http.ResponseWriter, r *http.Request) {
 
 	data, err := req.ToBytes()
 	if err != nil {
-		w.Write([]byte("Bad Request: Failed to transform bytes"))
 		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Bad Request: Failed to transform bytes"))
 		return
 	}
 
@@ -140,12 +140,11 @@ func WebhooksHandler(w http.ResponseWriter, r *http.Request) {
 
 	id, err := client.Topic(topic).Publish(r.Context(), m).Get(r.Context())
 	if err != nil {
-		w.Write([]byte("Bad Request: Error publishing event"))
 		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Bad Request: Error publishing event"))
 		return
 	}
 
 	fmt.Fprintf(w, "Message published: %v\n", id)
 	w.Write([]byte("Event sent"))
-	w.WriteHeader(http.StatusOK)
 }
