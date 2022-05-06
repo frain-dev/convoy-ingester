@@ -116,6 +116,15 @@ func (aV *APIKeyVerifier) VerifyRequest(r *http.Request, payload []byte) error {
 
 	if len(strings.TrimSpace(aV.config.Header)) != 0 {
 		authHeader = aV.config.Header
+		val := r.Header.Get(authHeader)
+
+		if len(strings.TrimSpace(val)) == 0 {
+			return ErrAuthHeader
+		}
+
+		if val != aV.config.APIKey {
+			return ErrAuthHeader
+		}
 	}
 
 	val := r.Header.Get(authHeader)
